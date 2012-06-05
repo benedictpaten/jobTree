@@ -34,9 +34,10 @@ from jobTree.batchSystems.gridengine import GridengineBatchSystem
 from jobTree.batchSystems.singleMachine import SingleMachineBatchSystem, badWorker
 from jobTree.batchSystems.combinedBatchSystem import CombinedBatchSystem
 
+from jobTree.src.job import Job
 from jobTree.src.master import createJob
 from jobTree.src.master import mainLoop
-from jobTree.src.master import writeJobs
+from jobTree.src.master import writeJob
 from jobTree.src.master import getEnvironmentFileName, getJobFileDirName, getStatsFileName, getParasolResultsFileName, getConfigFileName
 
 from sonLib.bioio import logger, setLoggingFromOptions, addLoggingOptions, getLogLevelString
@@ -266,8 +267,8 @@ def createFirstJob(command, config, memory=None, cpu=None, time=sys.maxint):
         memory = config.attrib["default_memory"]
     if cpu == None or cpu == sys.maxint:
         cpu = config.attrib["default_cpu"]
-    job = createJob({ "command":command, "memory":str(int(memory)), "cpu":str(int(cpu)) }, None, config)
-    writeJobs([job])
+    job = Job(command, int(memory), int(cpu), None, config)
+    writeJob(job)
     logger.info("Added the first job")
     
 def runJobTreeScript(options):

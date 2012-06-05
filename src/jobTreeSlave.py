@@ -55,7 +55,7 @@ def getMemoryAndCpuRequirements(config, nextJob):
         cpu = max(int(nextJob.attrib["cpu"]), 0)
     return memory, cpu
  
-def processJob(job, jobToRun, memoryAvailable, cpuAvailable, stats, environment, 
+def processJob(job, memoryAvailable, cpuAvailable, stats, environment, 
                localSlaveTempDir, localTempDir, config):
     """Runs a job.
     """
@@ -65,9 +65,9 @@ def processJob(job, jobToRun, memoryAvailable, cpuAvailable, stats, environment,
     from sonLib.bioio import redirectLoggerStreamHandlers
     from jobTree.src.master import getGlobalTempDirName
     
-    assert len(job.find("children").findall("child")) == 0
-    assert int(job.attrib["child_count"]) == int(job.attrib["black_child_count"])
-    command = jobToRun.attrib["command"]
+    assert job.getNumberOfChildCommands() == 0
+    assert job.getChildCount() == job.getBlackChildCount()
+    command, memory, cpu = job.getNextjobToRun.attrib["command"]
     #Copy the job file to be edited
     
     tempJob = ET.Element("job")
