@@ -34,35 +34,7 @@ from jobTree.batchSystems.abstractBatchSystem import AbstractBatchSystem
 from jobTree.src.master import getParasolResultsFileName
 
 from jobTree.batchSystems.multijob import MultiTarget
-
-class MemoryString:
-    def __init__(self, string):
-        if string[-1] == 'K' or string[-1] == 'M' or string[-1] == 'G':
-            self.unit = string[-1]
-            self.val = float(string[:-1])
-        else:
-            self.unit = 'B'
-            self.val = float(string)
-        self.bytes = self.byteVal()
-
-    def __str__(self):
-        if self.unit != 'B':
-            return str(val) + unit
-        else:
-            return str(val)
-
-    def byteVal(self):
-        if self.unit == 'B':
-            return self.val
-        elif self.unit == 'K':
-            return self.val * 1024
-        elif self.unit == 'M':
-            return self.val * 1048576
-        elif self.unit == 'G':
-            return self.val * 1073741824
-
-    def __cmp__(self, other):
-        return cmp(self.bytes, other.bytes)
+from jobTree.batchSystems.gridEgine import MemoryString
 
 def prepareQsub(cpu, mem):
     qsubline = ["qsub","-terse","-j", "-d", ".", "-o", "/dev/null", "-e", "/dev/null", "-v",
@@ -85,16 +57,16 @@ def qsub(qsubline):
 
 def getjobexitcode(sgeJobID):
         job, task = sgeJobID
-        args = ["qacct", "-j", str(job)]
-        if task is not None:
-             args.extend(["-t", str(task)])
+        args = ["qstat", "-f", str(job)]
+#        if task is not None:
+#             args.extend(["-t", str(task)])
 
         process = subprocess.Popen(args, stdout = subprocess.PIPE,stderr = subprocess.STDOUT)
         for line in process.stdout:
             if line.startswith("failed") and int(line.split()[1]) == 1:
                 return 1
             elif line.startswith("exit_status"):
-                return int(line.split()[1])
+                return int(line.split()[2])
         return None
 
 class Worker(Thread):
