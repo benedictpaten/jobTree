@@ -37,7 +37,7 @@ from jobTree.batchSystems.multijob import MultiTarget
 from jobTree.batchSystems.gridengine import MemoryString
 
 def prepareQsub(cpu, mem):
-    qsubline = ["qsub","-terse","-j", "-d", ".", "-o", "/dev/null", "-e", "/dev/null", "-v",
+    qsubline = ["qsub","-terse","-j", "oe", "-d", ".", "-o", "/dev/null", "-e", "/dev/null", "-v",
                      "LD_LIBRARY_PATH=%s" % os.environ["LD_LIBRARY_PATH"]]
     reqline = list()
     if cpu is not None:
