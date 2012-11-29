@@ -34,6 +34,7 @@ from jobTree.batchSystems.parasol import ParasolBatchSystem
 from jobTree.batchSystems.gridengine import GridengineBatchSystem
 from jobTree.batchSystems.singleMachine import SingleMachineBatchSystem, badWorker
 from jobTree.batchSystems.combinedBatchSystem import CombinedBatchSystem
+from jobTree.batchSystems.torque import TorqueBatchSystem
 
 from jobTree.src.job import Job
 
@@ -66,8 +67,10 @@ def commandAvailable(executable):
 def detectQueueSystem():
     if commandAvailable("parasol"):
         return "parasol"
-    if commandAvailable("qstat"):
+    if commandAvailable("qhost"):
         return "gridEngine"
+    if commandAvailable("qstat"):
+        return "torque"
     return "singleMachine"
 def addOptions(parser):
     # Wrapper function that allows jobTree to be used with both the optparse and 
@@ -203,6 +206,9 @@ def loadTheBatchSystem(config):
         elif batchSystemString == "gridengine" or batchSystemString == "gridEngine":
             batchSystem = GridengineBatchSystem(config)
             logger.info("Using the grid engine machine batch system")
+        elif batchSystemString == "torque" or batchSystemString == "Torque":
+            batchSystem = TorqueBatchSystem(config)
+            logger.info("Using the torque machine batch system")
         elif batchSystemString == "acid_test" or batchSystemString == "acidTest":
             batchSystem = SingleMachineBatchSystem(config, workerFn=badWorker)
             config.attrib["retry_count"] = str(32) #The chance that a job does not complete after 32 goes in one in 4 billion, so you need a lot of jobs before this becomes probable
