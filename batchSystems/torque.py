@@ -36,17 +36,29 @@ from jobTree.src.master import getParasolResultsFileName
 from jobTree.batchSystems.multijob import MultiTarget
 from jobTree.batchSystems.gridengine import MemoryString
 
-def prepareQsub(cpu, mem):
-    qsubline = ["qsub","-j", "oe", "-d", ".", "-o", "/dev/null", "-e", "/dev/null", "-v",
+# qsub in torque wants a script, not a command so we pop it in a file called
+# jobname.sh.  is this a good place for it??
+def prepareQsubScript(command):
+    scriptPath = "%s.sh" % command.split()[-1]
+    scriptFile = open(scriptPath, "w")
+    scriptFile.write("#!/bin/sh\ncd %s\n%s\n" % (os.getcwd(), command))
+    scriptFile.close()
+    os.chmod(scriptPath, 777)
+    return scriptPath
+
+def prepareQsub(cpu, mem, command):
+    qsubline = ["qsub","-j", "oe", "-o", "/dev/null", "-e", "/dev/null", "-v",
                 "LD_LIBRARY_PATH=%s" % os.environ["LD_LIBRARY_PATH"]]
     reqline = list()
-    if cpu is not None:
-        reqline.append("p="+str(cpu))
-    if mem is not None:
-        reqline.append("vf="+str(mem/ 1024)+"K")
+#    if cpu is not None:
+#        reqline.append("procs="+str(int(cpu)))
+#    if mem is not None:
+#        reqline.append("mem="+str(int(mem))+"b")
     if len(reqline) > 0:
         qsubline.extend(["-l", ",".join(reqline)])
-    return qsubline
+    scriptCommand = prepareQsubScript(command)
+    qsubline.extend([scriptCommand])
+    return qsubline 
 
 def qsub(qsubline):
     logger.debug("**"+" ".join(qsubline))
@@ -132,7 +144,7 @@ class TorqueBatchSystem(AbstractBatchSystem):
         self.nextJobID += 1
 
         self.currentjobs.add(jobID)
-        qsubline = prepareQsub(cpu, memory) + [command]
+        qsubline = prepareQsub(cpu, memory, command)
         self.newJobsQueue.put((jobID, qsubline))
         logger.debug("Issued the job command: %s with job id: %s " % (command, str(jobID)))
         return jobID
