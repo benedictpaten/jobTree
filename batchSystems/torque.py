@@ -34,7 +34,7 @@ from jobTree.batchSystems.abstractBatchSystem import AbstractBatchSystem
 from jobTree.src.master import getParasolResultsFileName
 
 from jobTree.batchSystems.multijob import MultiTarget
-from jobTree.batchSystems.gridegine import MemoryString
+from jobTree.batchSystems.gridengine import MemoryString
 
 def prepareQsub(cpu, mem):
     qsubline = ["qsub","-terse","-j", "-d", ".", "-o", "/dev/null", "-e", "/dev/null", "-v",
