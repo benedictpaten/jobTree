@@ -240,37 +240,7 @@ class TorqueBatchSystem(AbstractBatchSystem):
         return 1800 #Half an hour
 
     def obtainSystemConstants(self):
-        p = subprocess.Popen(["qhost"], stdout = subprocess.PIPE,stderr = subprocess.STDOUT)
-
-        line = p.stdout.readline()
-        items = line.strip().split()
-        num_columns = len(items)
-        cpu_index = None
-        mem_index = None        
-        for i in range(num_columns):
-                if items[i] == 'NCPU':
-                        cpu_index = i
-                elif items[i] == 'MEMTOT':
-                        mem_index = i
-
-        if cpu_index is None or mem_index is None:
-                RuntimeError("qhost command does not return NCPU or MEMTOT columns")
-
-        p.stdout.readline()
-
-        self.maxCPU = 0
-        self.maxMEM = MemoryString("0")
-        for line in p.stdout:
-                items = line.strip().split()
-                if len(items) < num_columns:
-                        RuntimeError("qhost output has a varying number of columns")
-                if items[cpu_index] != '-' and items[cpu_index] > self.maxCPU:
-                        self.maxCPU = items[cpu_index]
-                if items[mem_index] != '-' and MemoryString(items[mem_index]) > self.maxMEM:
-                        self.maxMEM = MemoryString(items[mem_index])
-
-        if self.maxCPU is 0 or self.maxMEM is 0:
-                RuntimeError("qhost returns null NCPU or MEMTOT info")
+        pass
                 
         
 def main():
