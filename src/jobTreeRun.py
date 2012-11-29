@@ -97,7 +97,8 @@ def addOptions_optparse(parser):
                             "job tree, then try and restart the jobs in it"))
     parser.add_option("--batchSystem", dest="batchSystem", default=detectQueueSystem(),
                       help=("The type of batch system to run the job(s) with, currently can be "
-                            "'singleMachine'/'parasol'/'acidTest'/'gridEngine'. default=%default"))
+                            "'singleMachine'/'parasol'/'acidTest'/'gridEngine'/'torque''. "
+                            "default=%default"))
     parser.add_option("--parasolCommand", dest="parasolCommand", default="parasol",
                       help="The command to run the parasol program default=%default")
     parser.add_option("--retryCount", dest="retryCount", default=0,
@@ -151,7 +152,7 @@ def addOptions_argparse(parser):
                               "job tree, then try and restart the jobs in it"))
     parser.add_argument("--batchSystem", dest="batchSystem", default=detectQueueSystem(),
                         help=("The type of batch system to run the job(s) with, currently can "
-                              "be 'singleMachine'/'parasol'/'acidTest'/'gridEngine'. default=%(default)s"))
+                              "be 'singleMachine'/'parasol'/'acidTest'/'gridEngine'/'torque'. default=%(default)s"))
     parser.add_argument("--parasolCommand", dest="parasolCommand", default="parasol",
                         help="The command to run the parasol program default=%(default)s")
     parser.add_argument("--retryCount", dest="retryCount", type=int, default=0,
