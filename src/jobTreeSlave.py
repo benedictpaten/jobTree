@@ -297,6 +297,8 @@ def main():
             system("rm -rf %s" % nestedGlobalTempDir)
             if os.path.exists(job.getLogFileName()):
                 os.remove(job.getLogFileName())
+            if config.attrib["batch_system"] == "torque":
+                os.remove(jobFile + ".sh")
             if stats != None:
                 assert len(os.listdir(job.getGlobalTempDirName())) == 2 #The job file and the stats file
             else:
