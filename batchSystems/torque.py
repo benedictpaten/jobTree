@@ -75,9 +75,9 @@ def getjobexitcode(sgeJobID):
 
         process = subprocess.Popen(args, stdout = subprocess.PIPE,stderr = subprocess.STDOUT)
         for line in process.stdout:
-            if line.startswith("failed") and int(line.split()[1]) == 1:
+            if line.find("failed") >= 0 and int(line.split()[1]) == 1:
                 return 1
-            elif line.startswith("exit_status"):
+            elif line.find("exit_status") >= 0:
                 return int(line.split()[2])
         return None
 
