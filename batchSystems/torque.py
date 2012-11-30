@@ -41,13 +41,13 @@ from jobTree.batchSystems.gridengine import MemoryString
 def prepareQsubScript(command):
     scriptPath = "%s.sh" % command.split()[-1]
     scriptFile = open(scriptPath, "w")
-    scriptFile.write("#!/bin/sh\ncd %s\n%s\n" % (os.getcwd(), command))
+    scriptFile.write("#PBS -m n\n#!/bin/bash\ncd %s\n%s\n" % (os.getcwd(), command))
     scriptFile.close()
     os.chmod(scriptPath, 0o755)
     return scriptPath
 
 def prepareQsub(cpu, mem, command):
-    qsubline = ["qsub","-j", "oe", "-m", "n", "-o", "/dev/null", "-e", "/dev/null"]#, "-v",
+    qsubline = ["qsub","-j", "oe", "-o", "/dev/null", "-e", "/dev/null"]#, "-v",
 #                "LD_LIBRARY_PATH=%s" % os.environ["LD_LIBRARY_PATH"]]
     reqline = list()
 #    if cpu is not None:
