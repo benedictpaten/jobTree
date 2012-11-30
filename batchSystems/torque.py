@@ -47,7 +47,7 @@ def prepareQsubScript(command):
     return scriptPath
 
 def prepareQsub(cpu, mem, command):
-    qsubline = ["qsub","-j", "-m", "n", "oe", "-o", "/dev/null", "-e", "/dev/null"]#, "-v",
+    qsubline = ["qsub","-j", "oe", "-m", "n", "-o", "/dev/null", "-e", "/dev/null"]#, "-v",
 #                "LD_LIBRARY_PATH=%s" % os.environ["LD_LIBRARY_PATH"]]
     reqline = list()
 #    if cpu is not None:
