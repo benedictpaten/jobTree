@@ -35,6 +35,7 @@ import drmaa
 from sonLib.bioio import logger
 from sonLib.bioio import system
 from jobTree.batchSystems.abstractBatchSystem import AbstractBatchSystem
+from jobTree.src.master import getParasolResultsFileName
 
 # iterate over the issued jobs in our set continuously.
 # if a finished job is found, but its id and exit status
@@ -50,14 +51,12 @@ class DrmaaJobPoller(Thread):
         while True:
             for jobName in self.bs.issuedJobNames - doneJobs:
                 jStatus = self.bs.session.jobStatus(jobName)
-                print "polling %s return status %s" % (jobName, str(jStatus))
                 if (jStatus == drmaa.JobState.DONE or
                     jStatus == drmaa.JobState.FAILED):
                     retval = self.bs.session.wait(jobName,
                                                   drmaa.Session.TIMEOUT_NO_WAIT)
                     self.bs.finishedQueue.put((jobName, retval.exitStatus))
                     doneJobs.add(jobName)
-                    print "JOB COMPLETED WITH NAME %s" % jobName
                     break
             # we keep this local structure to avoid modifying issuedJobNames
             # beacause that seems less thread safe
@@ -105,28 +104,13 @@ class DrmaApiBatchSystem(AbstractBatchSystem):
         self.worker.daemon = True
         self.worker.start()
 
-        #worker = Process(target=self.__pollFinishedJobs, args=[])
-        #worker.daemon = True
-        #worker.start()
-        #assert worker.is_alive()
+        # jobTree crashes if we don't do this:
         
-        self.usedCpus = 0
-        self.maxCpus = int(config.attrib["max_jobs"])
-        self.jobNamesToCpu = {}
-
-    def __pollFinishedJobs(self):
-        while True:
-            print self.issuedJobNames
-            for jobName in self.issuedJobNames:
-                jStatus = self.session.jobStatus(jobName)
-                print "polling %s return status %s" % (jobName, str(jStatus))
-                if (jStatus == drmaa.JobState.DONE or
-                    jStatus == drmaa.JobState.FAILED):
-                    retval = self.session.wait(jobName,
-                                               drmaa.Session.TIMEOUT_NO_WAIT)
-                    self.finishedQueue.put((jobName, retval.exitStatus))
-                    print "JOB COMPLETED WITH NAME %s" % jobName
-            sleep(1)
+        self.drmaaResultsFile = getParasolResultsFileName(config.attrib["job_tree"])        
+        #Reset the job queue and results (initially, we do this again once we've killed the jobs)
+        self.drmaaResultsFileHandle = open(self.drmaaResultsFile, 'w')
+        #We lose any previous state in this file, and ensure the files existence
+        self.drmaaResultsFileHandle.close() 
     
     def __des__(self):
         self.session.deleteJobTemplate(self.job)
@@ -195,7 +179,6 @@ class DrmaApiBatchSystem(AbstractBatchSystem):
             self.issuedJobNames.remove(jobName)
             del self.IDToName[jobID]
             del self.nameToID[jobName]
-            print "Return updated id %d" % jobID
             return (jobID, exitCode)
         except Empty:
             pass
