@@ -47,21 +47,17 @@ class DrmaaJobPoller(Thread):
         self.bs = bs
 
     def run(self):
-        doneJobs = set()
         while True:
-            for jobName in self.bs.issuedJobNames - doneJobs:
+            for jobName in list(self.bs.issuedJobNames):
                 jStatus = self.bs.session.jobStatus(jobName)
                 if (jStatus == drmaa.JobState.DONE or
                     jStatus == drmaa.JobState.FAILED):
                     retval = self.bs.session.wait(jobName,
                                                   drmaa.Session.TIMEOUT_NO_WAIT)
                     self.bs.finishedQueue.put((jobName, retval.exitStatus))
-                    doneJobs.add(jobName)
-                    break
-            # we keep this local structure to avoid modifying issuedJobNames
-            # beacause that seems less thread safe
-            doneJobs = doneJobs.intersection(self.bs.issuedJobNames)
-            time.sleep(.5)
+                    self.bs.issuedJobNames.remove(jobName)
+
+            time.sleep(10)
 
 class DrmaApiBatchSystem(AbstractBatchSystem):
     """The interface for drmaa
@@ -81,6 +77,13 @@ class DrmaApiBatchSystem(AbstractBatchSystem):
 
         # construct single job template for efficiency
         self.job = self.session.createJobTemplate()
+
+        # don't do anything with error or output for now
+        #self.job.outputPath = '/dev/null'
+        #self.job.errorPath = '/dev/null'
+        self.job.blockEmail = True
+        self.job.email = '/dev/null'
+        self.job.joinFiles = True
         
         # todo : can we restore an old session here?  may have to update some
         # kind of file as a hack.  will avoid thinking about this while
@@ -104,8 +107,7 @@ class DrmaApiBatchSystem(AbstractBatchSystem):
         self.worker.daemon = True
         self.worker.start()
 
-        # jobTree crashes if we don't do this:
-        
+        # not sure if need anymore
         self.drmaaResultsFile = getParasolResultsFileName(config.attrib["job_tree"])        
         #Reset the job queue and results (initially, we do this again once we've killed the jobs)
         self.drmaaResultsFileHandle = open(self.drmaaResultsFile, 'w')
@@ -119,6 +121,7 @@ class DrmaApiBatchSystem(AbstractBatchSystem):
     # submit a job to the batch system 
     def issueJob(self, command, memory, cpu):
         self.job.remoteCommand = command
+        #self.job.jobName = "unique name here?"
         jobName = self.session.runJob(self.job)
         self.issuedJobNames.add(jobName)
         jobID = self.nextID
@@ -143,6 +146,8 @@ class DrmaApiBatchSystem(AbstractBatchSystem):
                         self.session.control(jobName, drmaa.JobControlAction.TERMINATE)
                         killedIDs += jobName
                     self.issuedJobNames.remove(jobName)
+                    del self.IDToName[jobID]
+                    del self.nameToID[jobName]
                 else:
                     # this should probably be a fatal error
                     logger.critical("DRMMA couldnt has no record of job id %s so cant kill" % jobName)
@@ -176,7 +181,8 @@ class DrmaApiBatchSystem(AbstractBatchSystem):
             jobName, exitCode = self.finishedQueue.get(timeout=maxWait)
             self.finishedQueue.task_done()
             jobID = self.nameToID[jobName]
-            self.issuedJobNames.remove(jobName)
+            # note that it was removed from self.issuedJobNames when
+            # it was added to the finished queue
             del self.IDToName[jobID]
             del self.nameToID[jobName]
             return (jobID, exitCode)
