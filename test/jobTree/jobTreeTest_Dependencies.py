@@ -249,6 +249,7 @@ def main():
         tree = combTree(options.size)
     
     baseTarget = FirstJob(tree, "Anc00", options.sleepTime, startTime, int(options.cpusPerJob))
+    return 0
     Stack(baseTarget).startJobTree(options)
     
     if options.logFile is not None:
