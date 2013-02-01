@@ -302,6 +302,16 @@ def processFinishedJob(jobID, resultStatus, updatedJobFiles, jobBatcher):
                 assert job.getColour() in (Job.black, Job.red)
             else:
                 logger.critical("There was no valid .new file %s" % jobFile)
+                # hack to run on gordon.  i have no idea but the file handles
+                # seem to randomly get "stale" at this point.  but then
+                # they're fine after a few seconds.  note this loop shouldn't
+                # affect performance under normal circumstances apart from
+                # adding one extra isfile check
+                for secondChange in range(10):
+                    if not os.path.isfile(jobFile):
+                        time.sleep(2)
+                    else:
+                        break
                 assert os.path.isfile(jobFile)
                 job = readJob(jobFile) #The job may have failed before or after creating this file, we check the state.
                 reportJobLogFile(job)
