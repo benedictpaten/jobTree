@@ -33,19 +33,19 @@ import drmaa
 
 from sonLib.bioio import logger
 from sonLib.bioio import system
-from jobTree.batchSystems.drmaApi import DrmaaBatchSystem
+from jobTree.batchSystems.drmaaBase import DrmaaBatchSystem
 
-class DrmaaTorqueBatchSystem(DrmaaBaseBatchSystem):
+class DrmaaTorqueBatchSystem(DrmaaBatchSystem):
     """DRMAA isn't so great at qsub options.  So we need
     to reimplement this part for particular batch systems.  This
     one is designed for PBS/Torque as run on gordon.sdsc.edu
     """
 
     def __init__(self, config):
-        DrmaApiBatchSystem.__init__(self, config)
+        DrmaaBatchSystem.__init__(self, config)
 
     def __del__(self):
-        DrmaApiBatchSystem.__del__(self, config)
+        DrmaaBatchSystem.__del__(self, config)
 
     # Submit job using qsub
     def submitJob(self, command, memory, cpu):
@@ -60,4 +60,5 @@ class DrmaaTorqueBatchSystem(DrmaaBaseBatchSystem):
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE)
         jobName, nothing = process.communicate(command)
+        logger.debug("DrmaaTorque Issued the job command: %s with job id: %s " % (command, str(jobName)))
         return jobName.strip()

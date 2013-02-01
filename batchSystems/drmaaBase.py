@@ -130,18 +130,17 @@ class DrmaaBatchSystem(AbstractBatchSystem):
         self.job.remoteCommand = command
         self.job.jobName = command
         jobName = self.session.runJob(self.job)
+        logger.debug("DRMAA Issued the job command: %s with job id: %s " % (command, str(jobName)))
         return jobName
                 
     # submit a job to the batch system 
     def issueJob(self, command, memory, cpu):
-        #jobName = self.submitJob(command, memory, cpu)
-        jobName = self.torqueSubmit(command, memory, cpu)
-        self.submitJob.add(jobName)
+        jobName = self.submitJob(command, memory, cpu)
+        self.issuedJobNames.add(jobName)
         jobID = self.nextID
         self.nameToID[jobName] = jobID
         self.IDToName[self.nextID] = jobName
         self.nextID += 1
-        logger.debug("DRMAA Issued the job command: %s with job id: %s " % (command, str(jobName)))
         return jobID
 
     # jobs are killed only if they are in the issuedJobs set
