@@ -40,7 +40,8 @@ from jobTree.batchSystems.gridengine import GridengineBatchSystem
 from jobTree.batchSystems.singleMachine import SingleMachineBatchSystem, badWorker
 from jobTree.batchSystems.combinedBatchSystem import CombinedBatchSystem
 from jobTree.batchSystems.torque import TorqueBatchSystem
-from jobTree.batchSystems.drmaApi import DrmaApiBatchSystem
+from jobTree.batchSystems.drmaa import DrmaaBatchSystem
+from jobTree.batchSystems.drmaaTorque import DrmaaTorqueBatchSystem
 
 from jobTree.src.job import Job
 
@@ -74,6 +75,8 @@ def detectQueueSystem():
     if commandAvailable("parasol"):
         return "parasol"
     if drmaaInstalled is True:
+        if commandAvailable("qstat") and not commandAvailable("qhost"):
+            return "drmaaTorque"
         return "drmaa"
     if commandAvailable("qhost"):
         return "gridEngine"
@@ -105,7 +108,7 @@ def addOptions_optparse(parser):
                             "job tree, then try and restart the jobs in it"))
     parser.add_option("--batchSystem", dest="batchSystem", default=detectQueueSystem(),
                       help=("The type of batch system to run the job(s) with, currently can be "
-                            "'singleMachine'/'parasol'/'acidTest'/'gridEngine'/'torque'/'drmaa'. "
+                            "'singleMachine'/'parasol'/'acidTest'/'gridEngine'/'torque'/'drmaa'/'drmaaTorque'. "
                             "default=%default"))
     parser.add_option("--parasolCommand", dest="parasolCommand", default="parasol",
                       help="The command to run the parasol program default=%default")
@@ -160,7 +163,7 @@ def addOptions_argparse(parser):
                               "job tree, then try and restart the jobs in it"))
     parser.add_argument("--batchSystem", dest="batchSystem", default=detectQueueSystem(),
                         help=("The type of batch system to run the job(s) with, currently can "
-                              "be 'singleMachine'/'parasol'/'acidTest'/'gridEngine'/'torque'/'drmaa'. default=%(default)s"))
+                              "be 'singleMachine'/'parasol'/'acidTest'/'gridEngine'/'torque'/'drmaa'/'drmaaTorque'. default=%(default)s"))
     parser.add_argument("--parasolCommand", dest="parasolCommand", default="parasol",
                         help="The command to run the parasol program default=%(default)s")
     parser.add_argument("--retryCount", dest="retryCount", type=int, default=0,
@@ -219,8 +222,11 @@ def loadTheBatchSystem(config):
             batchSystem = TorqueBatchSystem(config)
             logger.info("Using the torque batch system")
         elif batchSystemString == "drmaa" or batchSystemString == "Drmaa":
-            batchSystem = DrmaApiBatchSystem(config)
+            batchSystem = DrmaaBatchSystem(config)
             logger.info("Using the drmaa batch system")
+        elif batchSystemString == "drmaaTorque" or batchSystemString == "DrmaaTorque":
+            batchSystem = DrmaaTorqueBatchSystem(config)
+            logger.info("Using the drmaaTorque batch system")
         elif batchSystemString == "acid_test" or batchSystemString == "acidTest":
             batchSystem = SingleMachineBatchSystem(config, workerFn=badWorker)
             config.attrib["retry_count"] = str(32) #The chance that a job does not complete after 32 goes in one in 4 billion, so you need a lot of jobs before this becomes probable

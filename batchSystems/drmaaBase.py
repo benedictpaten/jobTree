@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#Copyright (C) 2011 by Benedict Paten (benedictpaten@gmail.com)
+#Copyright (C) 2013 by Glenn Hickey and Benedict Paten (benedictpaten@gmail.com)
 #
 #Permission is hereby granted, free of charge, to any person obtaining a copy
 #of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@ import os
 import re
 import subprocess
 import time
+import datetime
 import sys
 from Queue import Queue, Empty
 from threading import Thread
@@ -59,13 +60,18 @@ class DrmaaJobPoller(Thread):
 
             time.sleep(10)
 
-class DrmaApiBatchSystem(AbstractBatchSystem):
-    """The interface for drmaa
+class DrmaaBatchSystem(AbstractBatchSystem):
+    """The interface for DRMAA.  This is a general API that should work
+    on a variety of batch systems including Grid Engine and Torque. It
+    only does very basic functions like submitting and polling.
+    Resource allocation other than time, ie mem and cpu, are not handled.
+    We should therefore derive classes for particular systems
+    (ex: DrmaaTorque).  
+
     Issued jobs are kept in a set in memory. This set is used for most
     functions since the the DRMAA API doesn't allow to iterate over jobs.
-    This means that any type of recovery from a crash is presently
-    impossible.  Only way around this seems to be serializing to file
-    (TODO)
+    This means that if the batch system crashes, issued job names are
+    lost-- so we cannot kill them or poll them.
     """
     
     def __init__(self, config):
@@ -114,16 +120,23 @@ class DrmaApiBatchSystem(AbstractBatchSystem):
         #We lose any previous state in this file, and ensure the files existence
         self.drmaaResultsFileHandle.close() 
     
-    def __des__(self):
+    def __del__(self):
         self.session.deleteJobTemplate(self.job)
         self.session.exit()  
 
+    # issue the job to the batch systme using drmaa
+    # THIS IS THE FUNCTION TO REIMPLEMENT IN DERIVED CLASSES
+    def submitJob(self, command, memory, cpu):
+        self.job.remoteCommand = command
+        self.job.jobName = command
+        jobName = self.session.runJob(self.job)
+        return jobName
+                
     # submit a job to the batch system 
     def issueJob(self, command, memory, cpu):
-        self.job.remoteCommand = command
-        #self.job.jobName = "unique name here?"
-        jobName = self.session.runJob(self.job)
-        self.issuedJobNames.add(jobName)
+        #jobName = self.submitJob(command, memory, cpu)
+        jobName = self.torqueSubmit(command, memory, cpu)
+        self.submitJob.add(jobName)
         jobID = self.nextID
         self.nameToID[jobName] = jobID
         self.IDToName[self.nextID] = jobName
