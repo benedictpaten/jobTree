@@ -49,10 +49,13 @@ class DrmaaTorqueBatchSystem(DrmaaBatchSystem):
 
     # Submit job using qsub
     def submitJob(self, command, memory, cpu):
-        # should come from xml?
-        timeSeconds = 10
-        walltime = str(datetime.timedelta(seconds=timeSeconds))
-        lString = "walltime=%s,mem=%d,nodes=1:ppn=%d:native" % (walltime, memory, cpu)
+        # we don't presently have a way of estimating running time.
+        # if we did, we could pass to to pbs/torque as follows:
+        #timeSeconds = 10
+        #walltime = str(datetime.timedelta(seconds=timeSeconds))
+        #lString = "walltime=%s,mem=%d,nodes=1:ppn=%d:native" % (walltime, memory, cpu)
+        # but for now, we forget about time and just give memory and processors
+        lString = "mem=%d,nodes=1:ppn=%d:native" % (memory, cpu)
         
         process = subprocess.Popen(['qsub', '-l', lString, '-N', 'jobTree',
                                     '-j', 'oe', '-o', '/dev/null',
