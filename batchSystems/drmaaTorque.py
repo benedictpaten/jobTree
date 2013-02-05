@@ -55,7 +55,7 @@ class DrmaaTorqueBatchSystem(DrmaaBatchSystem):
         #walltime = str(datetime.timedelta(seconds=timeSeconds))
         #lString = "walltime=%s,mem=%d,nodes=1:ppn=%d:native" % (walltime, memory, cpu)
         # but for now, we forget about time and just give memory and processors
-        lString = "mem=%d,nodes=1:ppn=%d:native" % (memory, cpu)
+        lString = "mem=%db,nodes=1:ppn=%d:native" % (memory, cpu)
         
         process = subprocess.Popen(['qsub', '-l', lString, '-N', 'jobTree',
                                     '-j', 'oe', '-o', '/dev/null',
