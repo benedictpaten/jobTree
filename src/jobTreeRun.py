@@ -31,6 +31,8 @@ from argparse import ArgumentParser
 from optparse import OptionParser, OptionContainer
 try:
     import drmaa
+    from jobTree.batchSystems.drmaaBase import DrmaaBatchSystem
+    from jobTree.batchSystems.drmaaTorque import DrmaaTorqueBatchSystem
     drmaaInstalled = True
 except Exception:
     drmaaInstalled = False
@@ -40,8 +42,6 @@ from jobTree.batchSystems.gridengine import GridengineBatchSystem
 from jobTree.batchSystems.singleMachine import SingleMachineBatchSystem, badWorker
 from jobTree.batchSystems.combinedBatchSystem import CombinedBatchSystem
 from jobTree.batchSystems.torque import TorqueBatchSystem
-from jobTree.batchSystems.drmaaBase import DrmaaBatchSystem
-from jobTree.batchSystems.drmaaTorque import DrmaaTorqueBatchSystem
 
 from jobTree.src.job import Job
 
