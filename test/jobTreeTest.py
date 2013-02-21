@@ -66,10 +66,6 @@ class TestCase(unittest.TestCase):
         if gridEngineIsInstalled():
             self.dependenciesTest(batchSystem="gridengine")
 
-def runJobTreeStatusAndFailIfNotComplete(jobTreeDir):
-    command = "jobTreeStatus --jobTree %s --failIfNotComplete --verbose" % jobTreeDir
-    system(command)
-
 def main():
     parseSuiteTestOptions()
     sys.argv = sys.argv[:1]

@@ -168,6 +168,6 @@ def _test():
     return doctest.testmod()
 
 if __name__ == '__main__':
-    from jobTree.test.scriptTree.scriptTreeTest_Wrapper import *
+    from jobTree.test.scriptTreeTest_Wrapper import *
     _test()
     main()

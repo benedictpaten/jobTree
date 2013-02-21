@@ -256,7 +256,7 @@ def main():
         checkLog(options)
     
 if __name__ == '__main__':
-    from jobTree.test.jobTree.jobTreeTest_Dependencies import *
+    from jobTree.test.jobTreeTest_Dependencies import *
     main()
     
     
