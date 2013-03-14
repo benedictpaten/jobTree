@@ -13,7 +13,7 @@ from sonLib.bioio import system
 from sonLib.bioio import getTempDirectory
 from sonLib.bioio import getTempFile
 
-from jobTree.src.common import parasolIsInstalled, gridEngineIsInstalled
+from jobTree.src.common import parasolIsInstalled, gridEngineIsInstalled, drmaaTorqueInstalled
 
 
 from jobTree.test.sort.lib import merge, sort, copySubRangeOfFile, getMidPoint
@@ -39,11 +39,18 @@ class TestCase(unittest.TestCase):
         """
         if parasolIsInstalled():
             scriptTree_SortTest(self.testNo, "parasol")
+
+    def testScriptTree_drmaaTorque(self):
+        """Tests scriptTree/jobTree by sorting a file in parallel.
+        """
+        if drmaaTorqueInstalled():
+            scriptTree_SortTest(self.testNo, "drmaaTorque")
     
     def testScriptTree_SortAcid(self):
         """Tests scriptTree/jobTree by sorting a file in parallel.
         """
         scriptTree_SortTest(self.testNo, "acid_test")
+
 
 #The following functions test the functions in the test!
     

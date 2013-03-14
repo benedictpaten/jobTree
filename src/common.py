@@ -23,6 +23,13 @@
 
 from sonLib.bioio import logger
 from sonLib.bioio import system
+try:
+    import drmaa
+    from jobTree.batchSystems.drmaaBase import DrmaaBatchSystem
+    from jobTree.batchSystems.drmaaTorque import DrmaaTorqueBatchSystem
+    drmaaInstalled = True
+except Exception:
+    drmaaInstalled = False
 
 def runJobTreeStats(jobTree, outputFile):
     system("jobTreeStats --jobTree %s --outputFile %s" % (jobTree, outputFile))
@@ -43,7 +50,15 @@ def parasolIsInstalled():
         return system("parasol status") == 0
     except RuntimeError:
         return False
-    
+
+def drmaaTorqueInstalled():
+    """Returns True if the DRMAA API is installed.  Note that we are
+    making the assumption that DRMAA -> Torque.  So if a DRMAA
+    Grid Engine implementation were to be added, we'd have to find
+    some way to destinguish between the two here
+    """
+    return drmaaInstalled
+
 def runJobTreeStatusAndFailIfNotComplete(jobTreeDir):
     command = "jobTreeStatus --jobTree %s --failIfNotComplete --verbose" % jobTreeDir
     system(command)

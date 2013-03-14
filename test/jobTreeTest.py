@@ -17,7 +17,7 @@ from sonLib.bioio import logger
 from sonLib.bioio import TempFileTree
 from sonLib.bioio import getTempFile
 
-from jobTree.src.common import parasolIsInstalled, gridEngineIsInstalled
+from jobTree.src.common import parasolIsInstalled, gridEngineIsInstalled, drmaaTorqueInstalled
 
 class TestCase(unittest.TestCase):
     
@@ -57,14 +57,19 @@ class TestCase(unittest.TestCase):
         self.dependenciesTest(batchSystem="singleMachine singleMachine 1000000")
         
     def testJobTree_dependencies_parasol(self):
-        return
         if parasolIsInstalled():
             self.dependenciesTest(batchSystem="parasol")
             
     def testJobTree_dependencies_gridengine(self):
-        return
         if gridEngineIsInstalled():
             self.dependenciesTest(batchSystem="gridengine")
+
+    def testJobTree_dependencies_drmaaTorque(self):
+        if drmaaTorqueInstalled():
+            #Test will take too long 
+            #self.dependenciesTest(batchSystem="drmaaTorque")
+            pass
+
 
 def main():
     parseSuiteTestOptions()
