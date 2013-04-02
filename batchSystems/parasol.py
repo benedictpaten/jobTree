@@ -209,13 +209,10 @@ class ParasolBatchSystem(AbstractBatchSystem):
         return runningJobs
     
     def getUpdatedJob(self, maxWait):
-        i = None
-        try:
-            i = self.outputQueue2.get(timeout=maxWait)
+        jobID = self.getFromQueueSafely(self.outputQueue2, maxWait)
+        if jobID != None:
             self.outputQueue2.task_done()
-        except Empty:
-            pass
-        return i
+        return jobID
     
     def getRescueJobFrequency(self):
         """Parasol leaks jobs, but rescuing jobs involves calls to parasol list jobs and pstat2,
