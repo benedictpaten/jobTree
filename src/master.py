@@ -270,7 +270,9 @@ def processFinishedJob(jobID, resultStatus, updatedJobFiles, jobBatcher, childJo
             updatedJobFiles.add(job) #Now we know the job is done we can add it to the list of updated job files
             logger.debug("Added job: %s to active jobs" % jobFile)
         else:
-            logger.critical("Job has no follow-ons or children despite job file being present so we'll consider it done: %s" % jobFile)
+            for message in job.messages: #This is here because jobs with no children or follow ons may log to master.
+                logger.critical("Got message from job at time: %s : %s" % (time.time(), message))
+            logger.debug("Job has no follow-ons or children despite job file being present so we'll consider it done: %s" % jobFile)
             updateParentStatus(jobFile, updatedJobFiles, childJobFileToParentJob, childCounts)
     else:  #The job is done
         if resultStatus != 0:
@@ -447,7 +449,7 @@ def mainLoop(config, batchSystem):
                 else:
                     logger.info("A result seems to already have been processed: %i" % jobID)
             else:
-                logger.debug("Waited but no job was finished, still have %i jobs issued" % jobBatcher.getNumberOfJobsIssued())
+                #logger.debug("Waited but no job was finished, still have %i jobs issued" % jobBatcher.getNumberOfJobsIssued())
                 if time.time() - timeSinceJobsLastRescued >= rescueJobsFrequency: #We only rescue jobs every N seconds, and when we have apparently exhausted the current job supply
                     reissueOverLongJobs(updatedJobFiles, jobBatcher, config, batchSystem, childJobFileToParentJob, childCounts)
                     logger.info("Reissued any over long jobs")
