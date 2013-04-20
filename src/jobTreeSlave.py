@@ -135,6 +135,9 @@ def main():
     setLogLevel(config.attrib["log_level"])
     job = Job.read(jobFile)
     job.messages = [] #This is the only way to stop messages logging twice, as are read only in the master
+    job.children = []
+    if os.path.exists(job.getLogFileName()): #This cleans the old log file
+        os.remove(job.getLogFileName())
     logger.info("Parsed arguments and set up logging")
 
      #Try loop for slave logging
@@ -272,15 +275,12 @@ def main():
             os.rename(tempStatsFile + ".new", tempStatsFile) #This operation is atomic
         
         ##########################################
-        #Cleanup global files at the end of the chain
+        #Cleanup torque files at the end of the chain
         ##########################################
-       
+        logger.info("Finished running the chain of jobs on this node, we ran for a total of %f seconds" % (time.time() - startTime))       
         if len(job.followOnCommands) == 0 and len(job.children) == 0 and len(job.messages) == 0:
-            job.delete()
             if config.attrib["batch_system"] == "torque":
                 os.remove(jobFile + ".sh")
-
-        logger.info("Finished running the chain of jobs on this node, we ran for a total of %f seconds" % (time.time() - startTime))
     
     ##########################################
     #Where slave goes wrong
@@ -308,9 +308,16 @@ def main():
     if slaveFailed:
         truncateFile(tempSlaveLogFile)
         system("mv %s %s" % (tempSlaveLogFile, job.getLogFileName()))
-        
     #Remove the temp dir
     system("rm -rf %s" % localSlaveTempDir)
+    
+    #This must happen after the log file is done with, else there is no place to put the log
+    if (not slaveFailed) and len(job.followOnCommands) == 0 and len(job.children) == 0 and len(job.messages) == 0:
+        ##########################################
+        #Cleanup global files at the end of the chain
+        ##########################################
+        job.delete()            
+        
     
 def _test():
     import doctest      
