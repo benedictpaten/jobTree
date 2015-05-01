@@ -33,6 +33,7 @@ from jobTree.batchSystems.gridengine import GridengineBatchSystem
 from jobTree.batchSystems.singleMachine import SingleMachineBatchSystem, badWorker
 from jobTree.batchSystems.combinedBatchSystem import CombinedBatchSystem
 from jobTree.batchSystems.lsf import LSFBatchSystem
+from jobTree.batchSystems.mesos import MesosBatchSystem
 from jobTree.jobStores.fileJobStore import FileJobStore
 
 def runJobTreeStats(jobTree, outputFile):
@@ -85,7 +86,7 @@ def _addOptions(addGroupFn, defaultStr):
     addOptionFn = addGroupFn("jobTree options for specifying the batch system", "Allows the specification of the batch system, and arguments to the batch system/big batch system (see below).")
     addOptionFn("--batchSystem", dest="batchSystem", default="singleMachine", #detectQueueSystem(),
                       help=("The type of batch system to run the job(s) with, currently can be "
-                            "'singleMachine'/'parasol'/'acidTest'/'gridEngine'/'lsf'. default=%s" % defaultStr))
+                            "'singleMachine'/'parasol'/'acidTest'/'gridEngine'/'lsf/mesos/badmesos'. default=%s" % defaultStr))
     addOptionFn("--maxThreads", dest="maxThreads", default=4,
                       help=("The maximum number of threads (technically processes at this point) to use when running in single "
                             "machine mode. Increasing this will allow more jobs to run concurrently when running on a single machine. default=%s" % defaultStr))
@@ -227,6 +228,12 @@ def loadBatchSystem(config):
         elif batchSystemString == "lsf" or batchSystemString == "LSF":
             batchSystem = LSFBatchSystem(config, maxCpus=maxCpus, maxMemory=maxMemory)
             logger.info("Using the lsf batch system")
+        elif batchSystemString == "mesos" or batchSystemString == "Mesos":
+            batchSystem = MesosBatchSystem(config, maxCpus=maxCpus, maxMemory=maxMemory)
+            logger.info("Using the mesos batch system")
+        elif batchSystemString == "badmesos" or batchSystemString == "badMesos":
+            batchSystem = MesosBatchSystem(config, maxCpus=maxCpus, maxMemory=maxMemory, badExecutor=True)
+            logger.info("Using the mesos batch system")
         else:
             raise RuntimeError("Unrecognised batch system: %s" % batchSystemString)
         return batchSystem

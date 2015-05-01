@@ -1,4 +1,3 @@
-
 #Copyright (C) 2011 by Benedict Paten (benedictpaten@gmail.com)
 #
 #Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -64,6 +63,8 @@ def main():
     checkOptions(options, parser)
     suite = allSuites(options)
     runner = unittest.TextTestRunner()
+    # remove test options, pass remaining options to jobTree code under test
+    sys.argv[1:] = args
     i = runner.run(suite)
     return len(i.failures) + len(i.errors)
 
