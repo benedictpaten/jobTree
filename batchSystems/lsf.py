@@ -38,7 +38,7 @@ from jobTree.src.master import getParasolResultsFileName
 
 class MemoryString:
     def __init__(self, string):
-        if string[-1] == 'K' or string[-1] == 'M' or string[-1] == 'G':
+        if string[-1] == 'K' or string[-1] == 'M' or string[-1] == 'G' or string[-1] == 'T':
             self.unit = string[-1]
             self.val = float(string[:-1])
         else:
@@ -61,6 +61,8 @@ class MemoryString:
             return self.val * 1000000
         elif self.unit == 'G':
             return self.val * 1000000000
+        elif self.unit == 'T':
+            return self.val * 1000000000000
 
     def __cmp__(self, other):
         return cmp(self.bytes, other.bytes)
